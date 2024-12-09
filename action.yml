@@ -1,7 +1,6 @@
 name: 'Transfer issues with labels'
 description:
-  'A GitHub Action to transfer an issue between repositories using labels.
-  Supports transferring issues from private to public repositories.'
+  'Transfer issues between repositories using labels, including private to public transfers.'
 author: 'fgerthoffert'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
