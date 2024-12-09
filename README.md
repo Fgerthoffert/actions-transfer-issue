@@ -74,10 +74,10 @@ on:
       - labeled
 
 jobs:
-  sync-labels:
+  transfer:
     runs-on: ubuntu-latest
     steps:
-      - name: Synchronize labels
+      - name: Transfer issue
         # Replace main by the release of your choice
         uses: fgerthoffert/actions-transfer-issue@main
         with:
