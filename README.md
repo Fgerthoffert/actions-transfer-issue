@@ -2,7 +2,8 @@
 <p align="center">
   <img alt="ZenCrepesLogo" src="docs/zencrepes-logo.png" height="140" />
   <h2 align="center">Transfer issues with labels</h2>
-  <p align="center">A GitHub Action to transfer an issue between repositories using labels. Supports transferring issues from private to public repositories.</p>
+  <p align="center">A GitHub Action to transfer an issue between repositories using
+   labels. Supports transferring issues from private to public repositories.</p>
 </p>
 
 ---
