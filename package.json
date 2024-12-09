@@ -1,8 +1,8 @@
 {
   "name": "typescript-action",
   "description": "GitHub Actions TypeScript template",
-  "version": "0.0.0",
-  "author": "",
+  "version": "1.0.0",
+  "author": "fgerthoffert",
   "private": true,
   "homepage": "https://github.com/actions/typescript-action",
   "repository": {
@@ -67,7 +67,8 @@
     ]
   },
   "dependencies": {
-    "@actions/core": "^1.11.1"
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.0"
   },
   "devDependencies": {
     "@github/local-action": "^2.2.0",

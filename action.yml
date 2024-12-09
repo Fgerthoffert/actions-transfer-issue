@@ -1,23 +1,41 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Transfer issues with labels'
+description:
+  'A GitHub Action to transfer an issue between repositories using labels.
+  Supports transferring issues from private to public repositories.'
+author: 'fgerthoffert'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: 'heart'
-  color: 'red'
+  icon: activity
+  color: green
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  token:
+    description: 'A GitHub Personal API Token'
     required: true
-    default: '1000'
+  router_prefix:
+    description:
+      'Label prefix to identify where to transfer the issue (for example,
+      "transfer:")'
+    required: true
+    default: 'transfer:'
+  allow_private_public_transfer:
+    description:
+      'Allow issues to be transferred from private to public repositories.'
+    default: false
+  create_labels_if_missing:
+    description: 'Create labels in the destination repository if missing'
+    default: true
+  github_issue_id:
+    description:
+      'When providing a GitHub Issue ID (GraphQL ID) the action will use that ID
+      instead of the one provided in the event payload.'
+    required: false
 
-# Define your outputs here.
 outputs:
-  time:
-    description: 'Your output description here'
+  issue_id:
+    description: 'Issue ID of the transferred issue'
 
 runs:
   using: node20
