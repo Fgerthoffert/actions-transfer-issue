@@ -1,6 +1,7 @@
 name: 'Transfer issues with labels'
 description:
-  'Transfer issues between repositories using labels, including private to public transfers.'
+  'Transfer issues between repositories using labels, including private to
+  public transfers.'
 author: 'fgerthoffert'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
