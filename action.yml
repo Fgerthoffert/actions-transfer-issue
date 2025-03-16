@@ -24,6 +24,11 @@ inputs:
     description:
       'Allow issues to be transferred from private to public repositories.'
     default: false
+  allow_private_public_transfer_comment:
+    description:
+      'Once an issue is transferred from a private to a public repository, a
+      comment will be added to the issue detailing the repositories.'
+    default: false
   create_labels_if_missing:
     description: 'Create labels in the destination repository if missing'
     default: true

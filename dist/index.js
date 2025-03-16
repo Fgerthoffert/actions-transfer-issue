@@ -2391,7 +2391,7 @@ module.exports = __toCommonJS(dist_src_exports);
 var import_universal_user_agent = __nccwpck_require__(7900);
 
 // pkg/dist-src/version.js
-var VERSION = "9.0.5";
+var VERSION = "9.0.6";
 
 // pkg/dist-src/defaults.js
 var userAgent = `octokit-endpoint.js/${VERSION} ${(0, import_universal_user_agent.getUserAgent)()}`;
@@ -2496,9 +2496,9 @@ function addQueryParameters(url, parameters) {
 }
 
 // pkg/dist-src/util/extract-url-variable-names.js
-var urlVariableRegex = /\{[^}]+\}/g;
+var urlVariableRegex = /\{[^{}}]+\}/g;
 function removeNonChars(variableName) {
-  return variableName.replace(/^\W+|\W+$/g, "").split(/,/);
+  return variableName.replace(/(?:^\W+)|(?:(?<!\W)\W+$)/g, "").split(/,/);
 }
 function extractUrlVariableNames(url) {
   const matches = url.match(urlVariableRegex);
@@ -2684,7 +2684,7 @@ function parse(options) {
     }
     if (url.endsWith("/graphql")) {
       if (options.mediaType.previews?.length) {
-        const previewsFromAcceptHeader = headers.accept.match(/[\w-]+(?=-preview)/g) || [];
+        const previewsFromAcceptHeader = headers.accept.match(/(?<![\w-])[\w-]+(?=-preview)/g) || [];
         headers.accept = previewsFromAcceptHeader.concat(options.mediaType.previews).map((preview) => {
           const format = options.mediaType.format ? `.${options.mediaType.format}` : "+json";
           return `application/vnd.github.${preview}-preview${format}`;
@@ -2933,7 +2933,7 @@ __export(dist_src_exports, {
 module.exports = __toCommonJS(dist_src_exports);
 
 // pkg/dist-src/version.js
-var VERSION = "9.2.1";
+var VERSION = "9.2.2";
 
 // pkg/dist-src/normalize-paginated-list-response.js
 function normalizePaginatedListResponse(response) {
@@ -2981,7 +2981,7 @@ function iterator(octokit, route, parameters) {
           const response = await requestMethod({ method, url, headers });
           const normalizedResponse = normalizePaginatedListResponse(response);
           url = ((normalizedResponse.headers.link || "").match(
-            /<([^>]+)>;\s*rel="next"/
+            /<([^<>]+)>;\s*rel="next"/
           ) || [])[1];
           return { value: normalizedResponse };
         } catch (error) {
@@ -5470,104 +5470,6 @@ legacyRestEndpointMethods.VERSION = VERSION;
 
 /***/ }),
 
-/***/ 7651:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-var __create = Object.create;
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// pkg/dist-src/index.js
-var dist_src_exports = {};
-__export(dist_src_exports, {
-  RequestError: () => RequestError
-});
-module.exports = __toCommonJS(dist_src_exports);
-var import_deprecation = __nccwpck_require__(4150);
-var import_once = __toESM(__nccwpck_require__(5560));
-var logOnceCode = (0, import_once.default)((deprecation) => console.warn(deprecation));
-var logOnceHeaders = (0, import_once.default)((deprecation) => console.warn(deprecation));
-var RequestError = class extends Error {
-  constructor(message, statusCode, options) {
-    super(message);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
-    this.name = "HttpError";
-    this.status = statusCode;
-    let headers;
-    if ("headers" in options && typeof options.headers !== "undefined") {
-      headers = options.headers;
-    }
-    if ("response" in options) {
-      this.response = options.response;
-      headers = options.response.headers;
-    }
-    const requestCopy = Object.assign({}, options.request);
-    if (options.request.headers.authorization) {
-      requestCopy.headers = Object.assign({}, options.request.headers, {
-        authorization: options.request.headers.authorization.replace(
-          / .*$/,
-          " [REDACTED]"
-        )
-      });
-    }
-    requestCopy.url = requestCopy.url.replace(/\bclient_secret=\w+/g, "client_secret=[REDACTED]").replace(/\baccess_token=\w+/g, "access_token=[REDACTED]");
-    this.request = requestCopy;
-    Object.defineProperty(this, "code", {
-      get() {
-        logOnceCode(
-          new import_deprecation.Deprecation(
-            "[@octokit/request-error] `error.code` is deprecated, use `error.status`."
-          )
-        );
-        return statusCode;
-      }
-    });
-    Object.defineProperty(this, "headers", {
-      get() {
-        logOnceHeaders(
-          new import_deprecation.Deprecation(
-            "[@octokit/request-error] `error.headers` is deprecated, use `error.response.headers`."
-          )
-        );
-        return headers || {};
-      }
-    });
-  }
-};
-// Annotate the CommonJS export names for ESM import in node:
-0 && (0);
-
-
-/***/ }),
-
 /***/ 8576:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -5601,7 +5503,7 @@ var import_endpoint = __nccwpck_require__(4806);
 var import_universal_user_agent = __nccwpck_require__(7900);
 
 // pkg/dist-src/version.js
-var VERSION = "8.4.0";
+var VERSION = "8.4.1";
 
 // pkg/dist-src/is-plain-object.js
 function isPlainObject(value) {
@@ -5617,7 +5519,7 @@ function isPlainObject(value) {
 }
 
 // pkg/dist-src/fetch-wrapper.js
-var import_request_error = __nccwpck_require__(7651);
+var import_request_error = __nccwpck_require__(3708);
 
 // pkg/dist-src/get-buffer-response.js
 function getBufferResponse(response) {
@@ -5660,7 +5562,7 @@ function fetchWrapper(requestOptions) {
       headers[keyAndValue[0]] = keyAndValue[1];
     }
     if ("deprecation" in headers) {
-      const matches = headers.link && headers.link.match(/<([^>]+)>; rel="deprecation"/);
+      const matches = headers.link && headers.link.match(/<([^<>]+)>; rel="deprecation"/);
       const deprecationLink = matches && matches.pop();
       log.warn(
         `[@octokit/request] "${requestOptions.method} ${requestOptions.url}" is deprecated. It is scheduled to be removed on ${headers.sunset}${deprecationLink ? `. See ${deprecationLink}` : ""}`
@@ -6601,7 +6503,7 @@ class HttpClient {
         if (this._keepAlive && useProxy) {
             agent = this._proxyAgent;
         }
-        if (this._keepAlive && !useProxy) {
+        if (!useProxy) {
             agent = this._agent;
         }
         // if agent is already assigned use that agent.
@@ -6633,15 +6535,11 @@ class HttpClient {
             agent = tunnelAgent(agentOptions);
             this._proxyAgent = agent;
         }
-        // if reusing agent across request and tunneling agent isn't assigned create a new agent
-        if (this._keepAlive && !agent) {
+        // if tunneling agent isn't assigned create a new agent
+        if (!agent) {
             const options = { keepAlive: this._keepAlive, maxSockets };
             agent = usingSsl ? new https.Agent(options) : new http.Agent(options);
             this._agent = agent;
-        }
-        // if not using private agent and tunnel agent isn't setup then use global agent
-        if (!agent) {
-            agent = usingSsl ? https.globalAgent : http.globalAgent;
         }
         if (usingSsl && this._ignoreSslError) {
             // we don't want to set NODE_TLS_REJECT_UNAUTHORIZED=0 since that will affect request for entire process
@@ -6664,7 +6562,7 @@ class HttpClient {
         }
         const usingSsl = parsedUrl.protocol === 'https:';
         proxyAgent = new undici_1.ProxyAgent(Object.assign({ uri: proxyUrl.href, pipelining: !this._keepAlive ? 0 : 1 }, ((proxyUrl.username || proxyUrl.password) && {
-            token: `${proxyUrl.username}:${proxyUrl.password}`
+            token: `Basic ${Buffer.from(`${proxyUrl.username}:${proxyUrl.password}`).toString('base64')}`
         })));
         this._proxyAgentDispatcher = proxyAgent;
         if (usingSsl && this._ignoreSslError) {
@@ -6778,11 +6676,11 @@ function getProxyUrl(reqUrl) {
     })();
     if (proxyVar) {
         try {
-            return new URL(proxyVar);
+            return new DecodedURL(proxyVar);
         }
         catch (_a) {
             if (!proxyVar.startsWith('http://') && !proxyVar.startsWith('https://'))
-                return new URL(`http://${proxyVar}`);
+                return new DecodedURL(`http://${proxyVar}`);
         }
     }
     else {
@@ -6840,6 +6738,19 @@ function isLoopbackAddress(host) {
         hostLower.startsWith('127.') ||
         hostLower.startsWith('[::1]') ||
         hostLower.startsWith('[0:0:0:0:0:0:0:1]'));
+}
+class DecodedURL extends URL {
+    constructor(url, base) {
+        super(url, base);
+        this._decodedUsername = decodeURIComponent(super.username);
+        this._decodedPassword = decodeURIComponent(super.password);
+    }
+    get username() {
+        return this._decodedUsername;
+    }
+    get password() {
+        return this._decodedPassword;
+    }
 }
 //# sourceMappingURL=proxy.js.map
 
@@ -7338,6 +7249,104 @@ function copyFile(srcFile, destFile, force) {
     });
 }
 //# sourceMappingURL=io.js.map
+
+/***/ }),
+
+/***/ 3708:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// pkg/dist-src/index.js
+var dist_src_exports = {};
+__export(dist_src_exports, {
+  RequestError: () => RequestError
+});
+module.exports = __toCommonJS(dist_src_exports);
+var import_deprecation = __nccwpck_require__(4150);
+var import_once = __toESM(__nccwpck_require__(5560));
+var logOnceCode = (0, import_once.default)((deprecation) => console.warn(deprecation));
+var logOnceHeaders = (0, import_once.default)((deprecation) => console.warn(deprecation));
+var RequestError = class extends Error {
+  constructor(message, statusCode, options) {
+    super(message);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, this.constructor);
+    }
+    this.name = "HttpError";
+    this.status = statusCode;
+    let headers;
+    if ("headers" in options && typeof options.headers !== "undefined") {
+      headers = options.headers;
+    }
+    if ("response" in options) {
+      this.response = options.response;
+      headers = options.response.headers;
+    }
+    const requestCopy = Object.assign({}, options.request);
+    if (options.request.headers.authorization) {
+      requestCopy.headers = Object.assign({}, options.request.headers, {
+        authorization: options.request.headers.authorization.replace(
+          /(?<! ) .*$/,
+          " [REDACTED]"
+        )
+      });
+    }
+    requestCopy.url = requestCopy.url.replace(/\bclient_secret=\w+/g, "client_secret=[REDACTED]").replace(/\baccess_token=\w+/g, "access_token=[REDACTED]");
+    this.request = requestCopy;
+    Object.defineProperty(this, "code", {
+      get() {
+        logOnceCode(
+          new import_deprecation.Deprecation(
+            "[@octokit/request-error] `error.code` is deprecated, use `error.status`."
+          )
+        );
+        return statusCode;
+      }
+    });
+    Object.defineProperty(this, "headers", {
+      get() {
+        logOnceHeaders(
+          new import_deprecation.Deprecation(
+            "[@octokit/request-error] `error.headers` is deprecated, use `error.response.headers`."
+          )
+        );
+        return headers || {};
+      }
+    });
+  }
+};
+// Annotate the CommonJS export names for ESM import in node:
+0 && (0);
+
 
 /***/ }),
 
@@ -15758,6 +15767,14 @@ const { isUint8Array, isArrayBuffer } = __nccwpck_require__(8253)
 const { File: UndiciFile } = __nccwpck_require__(3041)
 const { parseMIMEType, serializeAMimeType } = __nccwpck_require__(4322)
 
+let random
+try {
+  const crypto = __nccwpck_require__(7598)
+  random = (max) => crypto.randomInt(0, max)
+} catch {
+  random = (max) => Math.floor(Math.random(max))
+}
+
 let ReadableStream = globalThis.ReadableStream
 
 /** @type {globalThis['File']} */
@@ -15843,7 +15860,7 @@ function extractBody (object, keepalive = false) {
     // Set source to a copy of the bytes held by object.
     source = new Uint8Array(object.buffer.slice(object.byteOffset, object.byteOffset + object.byteLength))
   } else if (util.isFormDataLike(object)) {
-    const boundary = `----formdata-undici-0${`${Math.floor(Math.random() * 1e11)}`.padStart(11, '0')}`
+    const boundary = `----formdata-undici-0${`${random(1e11)}`.padStart(11, '0')}`
     const prefix = `--${boundary}\r\nContent-Disposition: form-data`
 
     /*! formdata-polyfill. MIT License. Jimmy Wärting <https://jimmy.warting.se/opensource> */
@@ -29923,13 +29940,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = run;
 const core = __importStar(__nccwpck_require__(7484));
@@ -29943,6 +29970,7 @@ async function run() {
     try {
         const inputGithubToken = core.getInput('token');
         const inputAllowPrivatePublicTransfer = core.getInput('allow_private_public_transfer') === 'true';
+        const inputAllowPrivatePublicTransferComment = core.getInput('allow_private_public_transfer_comment') === 'true';
         const inputCreateLabelsIfMissing = core.getInput('create_labels_if_missing') === 'true';
         const inputGithubIssueId = core.getInput('github_issue_id');
         const githubIssuePayload = github.context.payload.issue;
@@ -29956,38 +29984,36 @@ async function run() {
         core.info(`Successfully authenticated to GitHub as: ${login}`);
         // Even though we are receiving data from the issue event
         // we're still going to rely on an API call to collect data about the issue.
-        const githubIssue = await (0, utils_1.getIssue)({
+        const sourceGithubIssue = await (0, utils_1.getIssue)({
             octokit,
             issueId: githubIssueId
         });
-        core.debug(`Issue: ${JSON.stringify(githubIssue)}`);
-        if (githubIssue.id === undefined) {
+        core.debug(`Issue: ${JSON.stringify(sourceGithubIssue)}`);
+        if (sourceGithubIssue.id === undefined) {
             core.setFailed(`Unable to find an issue with ID: ${login}`);
-        }
-        const inputRouterPrefix = core.getInput('router_prefix');
-        // In source issue, search for a label matching the router prefix
-        const sourceLabel = githubIssue.labels.nodes.find((label) => label.name.startsWith(inputRouterPrefix));
-        if (sourceLabel === undefined) {
-            core.info(`Could not find a transfer label attached to the issue`);
             return;
         }
-        core.info(`Processing transfer label: ${sourceLabel.name}`);
+        const sourceLabel = (0, utils_1.getTransferLabel)(sourceGithubIssue);
         // Extract the target repository from the label
         const targetRepositoryName = sourceLabel.name.split(':')[1];
+        if (targetRepositoryName === undefined) {
+            core.info(`No transfer label found on issue: ${sourceGithubIssue.title}, exiting`);
+            return;
+        }
         core.info(`Request to transfer the issue to repository: ${targetRepositoryName}`);
-        if (targetRepositoryName === githubIssue.repository.name) {
+        if (targetRepositoryName === sourceGithubIssue.repository.name) {
             core.info(`This issue is already in repository: ${targetRepositoryName}`);
             core.info(`Removing transfer label and exiting`);
             await (0, utils_1.removeLabelFromIssue)({
                 octokit,
-                issueId: githubIssueId,
+                issueId: sourceGithubIssue.id,
                 labelId: sourceLabel.id
             });
             return;
         }
         const githubTargetRepository = await (0, utils_1.getRepository)({
             octokit,
-            ownerLogin: githubIssue.repository.owner.login,
+            ownerLogin: sourceGithubIssue.repository.owner.login,
             repoName: targetRepositoryName
         });
         // If repository does not exist, warn and exit
@@ -29997,7 +30023,7 @@ async function run() {
         }
         // Special handling to transfer issues from a private repository to a public one
         let transferredIssueId = '';
-        if (githubIssue.repository.isPrivate === true &&
+        if (sourceGithubIssue.repository.isPrivate === true &&
             githubTargetRepository.isPrivate === false) {
             if (inputAllowPrivatePublicTransfer === false) {
                 core.warning(`The action is configured to prevent transferring issues from private to public repositories. Update "allow_private_public_transfer" parameter to allow this transfer.`);
@@ -30007,19 +30033,20 @@ async function run() {
             core.info(`This involves the creation of a temporary private repository`);
             const temporaryRepo = await (0, utils_1.createTemporaryRepository)({
                 octokit,
-                ownerLogin: githubIssue.repository.owner.login
+                ownerLogin: sourceGithubIssue.repository.owner.login
             });
             core.info(`Created temporary repository: ${temporaryRepo.name}`);
             const transferredIssueTempRepo = await (0, utils_1.transferIssueToRepository)({
                 octokit,
-                issueId: githubIssueId,
+                issueId: sourceGithubIssue.id,
                 repositoryId: temporaryRepo.node_id,
-                createLabelsIfMissing: inputCreateLabelsIfMissing
+                createLabelsIfMissing: inputCreateLabelsIfMissing,
+                sourceGithubIssue
             });
             core.info(`Transferred issue to the temporary repository: ${temporaryRepo.name}, new issue ID is: ${transferredIssueTempRepo.id}`);
             const tempRepoStatus = await (0, utils_1.makeTemporaryRepositoryPublic)({
                 octokit,
-                ownerLogin: githubIssue.repository.owner.login,
+                ownerLogin: sourceGithubIssue.repository.owner.login,
                 repoName: temporaryRepo.name
             });
             core.info(`Visibility status for repository: ${temporaryRepo.name} is now: ${tempRepoStatus.visibility} `);
@@ -30027,23 +30054,44 @@ async function run() {
                 octokit,
                 issueId: transferredIssueTempRepo.id,
                 repositoryId: githubTargetRepository.id,
-                createLabelsIfMissing: inputCreateLabelsIfMissing
+                createLabelsIfMissing: inputCreateLabelsIfMissing,
+                sourceGithubIssue
             });
             transferredIssueId = transferredIssue.id;
             core.info(`Transferred issue to the destination repository: ${githubTargetRepository.name}, new issue ID is: ${transferredIssue.id}`);
             await (0, utils_1.deleteTemporaryRepository)({
                 octokit,
-                ownerLogin: githubIssue.repository.owner.login,
+                ownerLogin: sourceGithubIssue.repository.owner.login,
                 repoName: temporaryRepo.name
             });
             core.info(`Temporary repository ${temporaryRepo.name} deleted`);
+            if (inputAllowPrivatePublicTransferComment === true) {
+                // Since it might not be desired to expose the name of the private repositories
+                // in a public issue, a flag is available to post or not a comment about the transfer
+                core.info(`Adding comment to issue about the transfer via temporary repository`);
+                await (0, utils_1.addCommentToIssue)({
+                    octokit,
+                    issueId: transferredIssue.id,
+                    comment: 'Issue was transferred from a private to a public repository\n\n ' +
+                        'Source: `' +
+                        `${sourceGithubIssue.repository.owner.login}/${sourceGithubIssue.repository.name}#${sourceGithubIssue.number}` +
+                        '`\n' +
+                        'Destination: `' +
+                        `${sourceGithubIssue.repository.owner.login}/${githubTargetRepository.name}#${transferredIssue.number}` +
+                        '`\n' +
+                        'Temporary repository: `' +
+                        `${sourceGithubIssue.repository.owner.login}/${temporaryRepo.name}#${transferredIssueTempRepo.number}` +
+                        ' (deleted)`\n'
+                });
+            }
         }
         else {
             const transferredIssue = await (0, utils_1.transferIssueToRepository)({
                 octokit,
-                issueId: githubIssueId,
+                issueId: sourceGithubIssue.id,
                 repositoryId: githubTargetRepository.id,
-                createLabelsIfMissing: inputCreateLabelsIfMissing
+                createLabelsIfMissing: inputCreateLabelsIfMissing,
+                sourceGithubIssue
             });
             transferredIssueId = transferredIssue.id;
             core.info(`Transferred issue to the destination repository: ${githubTargetRepository.name}, new issue ID is: ${transferredIssue.id}`);
@@ -30059,11 +30107,7 @@ async function run() {
             issueId: transferredIssueId
         });
         core.debug(`Issue once moved: ${JSON.stringify(githubIssueMoved)}`);
-        const movedLabel = githubIssueMoved.labels.nodes.find(label => label.name === sourceLabel.name);
-        if (movedLabel === undefined) {
-            core.info(`Could not find the transfer label attached to the issue once moved`);
-            return;
-        }
+        const movedLabel = (0, utils_1.getTransferLabel)(githubIssueMoved);
         await (0, utils_1.removeLabelFromIssue)({
             octokit,
             issueId: githubIssueMoved.id,
@@ -30077,6 +30121,78 @@ async function run() {
             core.setFailed(error.message);
     }
 }
+
+
+/***/ }),
+
+/***/ 8649:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/* eslint-disable  @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable  @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+/* eslint-disable  @typescript-eslint/no-unsafe-call */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.addCommentToIssue = void 0;
+const core = __importStar(__nccwpck_require__(7484));
+const addCommentToIssue = async ({ octokit, issueId, comment }) => {
+    core.debug(`Adding a comment to issue: ${issueId}`);
+    const graphQLResponse = await octokit
+        .graphql(`
+      mutation ($issueId: ID! $body: String!) {
+          addComment(input: {
+            subjectId: $issueId
+            body: $body
+          }) {
+            clientMutationId
+          }
+        }
+    `, {
+        issueId: issueId,
+        body: comment
+    })
+        .catch((error) => {
+        core.error(error.message);
+    });
+    return graphQLResponse.node;
+};
+exports.addCommentToIssue = addCommentToIssue;
+exports["default"] = exports.addCommentToIssue;
 
 
 /***/ }),
@@ -30106,16 +30222,27 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createTemporaryRepository = void 0;
 const core = __importStar(__nccwpck_require__(7484));
+const _1 = __nccwpck_require__(8541);
 // From: https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 const salt = (length) => {
     let result = '';
@@ -30147,6 +30274,34 @@ const createTemporaryRepository = async ({ octokit, ownerLogin }) => {
             'X-GitHub-Api-Version': '2022-11-28'
         }
     });
+    // Before proceeding, we need to make sure that the repository has been created
+    // and that it has no issues (i.e. no conflict with an existing repo)
+    let repoFound = false;
+    let repoTriesCpt = 0;
+    const repoMaxTries = 10;
+    while (!repoFound) {
+        core.debug(`Querying repository ${ownerLogin}/${repoName} to verify cration - try ${repoTriesCpt}/${repoMaxTries}`);
+        const githubTargetRepository = await (0, _1.getRepository)({
+            octokit,
+            ownerLogin: ownerLogin,
+            repoName: repoName
+        });
+        if (githubTargetRepository !== undefined &&
+            githubTargetRepository !== null &&
+            githubTargetRepository.issues.totalCount === 0) {
+            core.debug(`Validated repository ${ownerLogin}/${repoName} was indeed created: ${JSON.stringify(githubTargetRepository)}`);
+            repoFound = true;
+            break;
+        }
+        else {
+            if (repoTriesCpt >= repoMaxTries) {
+                core.setFailed(`Repository ${repoName} could not be created in organization ${ownerLogin}`);
+                break;
+            }
+            repoTriesCpt++;
+            await (0, _1.sleep)(1000);
+        }
+    }
     return newRepo.data;
 };
 exports.createTemporaryRepository = createTemporaryRepository;
@@ -30180,13 +30335,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.deleteTemporaryRepository = void 0;
 const core = __importStar(__nccwpck_require__(7484));
@@ -30235,13 +30400,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getIssue = void 0;
 const core = __importStar(__nccwpck_require__(7484));
@@ -30264,7 +30439,23 @@ const getIssue = async ({ octokit, issueId }) => {
                 name
               }
             }
+            timelineItems(first: 1) {
+              totalCount
+            }
+            projectItems {
+              totalCount
+            }
+            participants(first: 1) {
+              totalCount
+            }
+            subIssues(first: 1) {
+              totalCount
+            }
+            comments(first: 1) {
+              totalCount
+            }              
             repository {
+              id
               name
               isPrivate
               owner {
@@ -30312,13 +30503,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getRepository = void 0;
 const core = __importStar(__nccwpck_require__(7484));
@@ -30335,6 +30536,9 @@ const getRepository = async ({ octokit, ownerLogin, repoName }) => {
             owner {
               login
             }
+            issues(first: 1) {
+              totalCount 
+            }
           }
         }
       }
@@ -30346,6 +30550,67 @@ const getRepository = async ({ octokit, ownerLogin, repoName }) => {
 };
 exports.getRepository = getRepository;
 exports["default"] = exports.getRepository;
+
+
+/***/ }),
+
+/***/ 2046:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+/* eslint-disable  @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable  @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+/* eslint-disable  @typescript-eslint/no-unsafe-call */
+/* eslint-disable  @typescript-eslint/no-unsafe-return */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getTransferLabel = void 0;
+const core = __importStar(__nccwpck_require__(7484));
+const getTransferLabel = (gitHubIssue) => {
+    const inputRouterPrefix = core.getInput('router_prefix');
+    const transferLabel = gitHubIssue.labels.nodes.find((label) => label.name.startsWith(inputRouterPrefix));
+    if (transferLabel === undefined) {
+        core.info(`Could not find a transfer label attached to the issue`);
+        return { id: '', name: '' };
+    }
+    core.info(`Transfer label is: ${transferLabel.name}, with ID: ${transferLabel.id}`);
+    return transferLabel;
+};
+exports.getTransferLabel = getTransferLabel;
 
 
 /***/ }),
@@ -30378,6 +30643,8 @@ __exportStar(__nccwpck_require__(878), exports);
 __exportStar(__nccwpck_require__(6317), exports);
 __exportStar(__nccwpck_require__(5963), exports);
 __exportStar(__nccwpck_require__(490), exports);
+__exportStar(__nccwpck_require__(2046), exports);
+__exportStar(__nccwpck_require__(8649), exports);
 
 
 /***/ }),
@@ -30407,13 +30674,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.makeTemporaryRepositoryPublic = void 0;
 const core = __importStar(__nccwpck_require__(7484));
@@ -30463,13 +30740,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.removeLabelFromIssue = void 0;
 const core = __importStar(__nccwpck_require__(7484));
@@ -30543,18 +30830,67 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.transferIssueToRepository = void 0;
 const core = __importStar(__nccwpck_require__(7484));
-const transferIssueToRepository = async ({ octokit, issueId, repositoryId, createLabelsIfMissing }) => {
-    core.debug(`Fetching details about issue with node_id: ${issueId}`);
+const _1 = __nccwpck_require__(8541);
+const isTransferComplete = (sourceIssue, transferredIssue) => {
+    let transferValid = false;
+    core.debug(`Source: ${JSON.stringify(sourceIssue)}`);
+    core.debug(`Transferred: ${JSON.stringify(transferredIssue)}`);
+    if (sourceIssue.timelineItems === undefined ||
+        sourceIssue.timelineItems.totalCount >
+            transferredIssue.timelineItems.totalCount) {
+        core.debug(`Source issue has more timeline items than the transferred issue`);
+        transferValid = false;
+    }
+    else if (sourceIssue.projectItems === undefined ||
+        sourceIssue.projectItems.totalCount >
+            transferredIssue.projectItems.totalCount) {
+        core.debug(`Source issue has more projectItems than the transferred issue`);
+        transferValid = false;
+    }
+    else if (sourceIssue.participants === undefined ||
+        sourceIssue.participants.totalCount >
+            transferredIssue.participants.totalCount) {
+        core.debug(`Source issue has more participants than the transferred issue`);
+        transferValid = false;
+    }
+    else if (sourceIssue.subIssues === undefined ||
+        sourceIssue.subIssues.totalCount > transferredIssue.subIssues.totalCount) {
+        core.debug(`Source issue has more subIssues than the transferred issue`);
+        transferValid = false;
+    }
+    else if (sourceIssue.comments === undefined ||
+        sourceIssue.comments.totalCount > transferredIssue.comments.totalCount) {
+        core.debug(`Source issue has more comments than the transferred issue`);
+        transferValid = false;
+    }
+    else {
+        core.debug(`All checks successful, issue appears to be fully transferred`);
+        transferValid = true;
+    }
+    return transferValid;
+};
+const transferIssueToRepository = async ({ octokit, issueId, repositoryId, createLabelsIfMissing, sourceGithubIssue }) => {
+    core.debug(`Will trigger transfer of issue: ${issueId} to repository: ${repositoryId}`);
     const graphQLResponse = await octokit
         .graphql(`
       mutation ($repositoryId: ID! $createLabelsIfMissing: Boolean! $issueId: ID!) {
@@ -30578,7 +30914,56 @@ const transferIssueToRepository = async ({ octokit, issueId, repositoryId, creat
         .catch((error) => {
         core.error(error.message);
     });
-    return graphQLResponse.transferIssue.issue;
+    core.debug(`Transfer issue response: ${JSON.stringify(graphQLResponse.transferIssue)}`);
+    const transferredIssue = graphQLResponse.transferIssue.issue;
+    core.debug(`Issue transferred, the new issue ID is: ${transferredIssue.id}`);
+    // Before proceeding, we need to make sure that the issue has been fully transferred
+    let issueFound = false;
+    let issueTriesCpt = 0;
+    const issueMaxTries = 10;
+    while (!issueFound) {
+        core.debug(`Querying issue Id ${graphQLResponse.transferIssue.issue.id} to verify cration - try ${issueTriesCpt}/${issueMaxTries}`);
+        const checkTransferredIssue = await (0, _1.getIssue)({
+            octokit,
+            issueId: transferredIssue.id
+        });
+        if (checkTransferredIssue !== undefined && checkTransferredIssue !== null) {
+            core.debug(`Issue ${transferredIssue.id} was found in the repository`);
+            if (isTransferComplete(sourceGithubIssue, checkTransferredIssue)) {
+                core.debug(`Validated that issue ${transferredIssue.id} was fully transferred`);
+                issueFound = true;
+                break;
+            }
+            else {
+                core.debug(`Issue ${transferredIssue.id} was transferred but is still missing some data`);
+            }
+        }
+        if (issueTriesCpt >= issueMaxTries) {
+            core.info(`Issue ${transferredIssue.id} Could not be fully transferred to repository ID: ${repositoryId}`);
+            core.info(`The action will now attempt to transfer the issue back to the source repository`);
+            // Before transferring back we need to remove the transfer label
+            // Otherwise the issue will re-initiate the transfer process
+            const movedLabel = (0, _1.getTransferLabel)(checkTransferredIssue);
+            await (0, _1.removeLabelFromIssue)({
+                octokit,
+                issueId: checkTransferredIssue.id,
+                labelId: movedLabel.id
+            });
+            // Transfer the issue back to the source repository
+            await (0, exports.transferIssueToRepository)({
+                octokit: octokit,
+                issueId: transferredIssue.id,
+                repositoryId: sourceGithubIssue.repository.id,
+                createLabelsIfMissing: false,
+                sourceGithubIssue: transferredIssue
+            });
+            core.setFailed(`Issue could not be successfully transferred to repository ID: ${repositoryId}. Issue was transferred back to the source repository`);
+            break;
+        }
+        issueTriesCpt++;
+        await (0, _1.sleep)(1000);
+    }
+    return transferredIssue;
 };
 exports.transferIssueToRepository = transferIssueToRepository;
 exports["default"] = exports.transferIssueToRepository;
@@ -30687,6 +31072,14 @@ module.exports = require("https");
 
 "use strict";
 module.exports = require("net");
+
+/***/ }),
+
+/***/ 7598:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:crypto");
 
 /***/ }),
 

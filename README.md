@@ -91,13 +91,14 @@ jobs:
 
 The following input parameters are available:
 
-| Parameter                     | Default   | Description                                                                                                                 | Required |
-| ----------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------- | -------- |
-| token                         |           | A GitHub Personal API Token                                                                                                 | true     |
-| router_prefix                 | transfer: | Label prefix to identify where to transfer the issue (for example, "transfer:sandbox")                                      | true     |
-| allow_private_public_transfer | false     | Allow issues to be transferred from private to public repositories.                                                         |          |
-| create_labels_if_missing      | true      | Create labels in the destination repository if missing                                                                      |          |
-| github_issue_id               |           | When providing a GitHub Issue ID (GraphQL ID) the action will use that ID instead of the one provided in the event payload. | false    |
+| Parameter                             | Default   | Description                                                                                                                                                                    | Required |
+| ------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| token                                 |           | A GitHub Personal API Token                                                                                                                                                    | true     |
+| router_prefix                         | transfer: | Label prefix to identify where to transfer the issue (for example, "transfer:sandbox")                                                                                         | true     |
+| allow_private_public_transfer         | false     | Allow issues to be transferred from private to public repositories.                                                                                                            |          |
+| allow_private_public_transfer_comment | false     | Once the transfer from public to private is successful, add a comment to the issue with the repositories. Warning, this will publicly expose the name of the source repository |          |
+| create_labels_if_missing              | true      | Create labels in the destination repository if missing                                                                                                                         |          |
+| github_issue_id                       |           | When providing a GitHub Issue ID (GraphQL ID) the action will use that ID instead of the one provided in the event payload.                                                    | false    |
 
 ## Outputs
 
