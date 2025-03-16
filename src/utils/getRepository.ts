@@ -30,6 +30,9 @@ export const getRepository = async ({
             owner {
               login
             }
+            issues(first: 1) {
+              totalCount 
+            }
           }
         }
       }

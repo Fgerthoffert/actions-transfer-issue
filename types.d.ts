@@ -19,6 +19,21 @@ interface GitHubIssue {
     totalCount: number
     nodes: GitHubLabel[]
   }
+  timelineItems: {
+    totalCount: number
+  }
+  participants: {
+    totalCount: number
+  }
+  projectItems: {
+    totalCount: number
+  }
+  subIssues: {
+    totalCount: number
+  }
+  comments: {
+    totalCount: number
+  }
 }
 
 interface GitHubRepository {
@@ -29,5 +44,8 @@ interface GitHubRepository {
   visibility: string
   owner: {
     login: string
+  }
+  issues: {
+    totalCount: number
   }
 }

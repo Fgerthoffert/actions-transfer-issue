@@ -32,7 +32,23 @@ export const getIssue = async ({
                 name
               }
             }
+            timelineItems(first: 1) {
+              totalCount
+            }
+            projectItems {
+              totalCount
+            }
+            participants(first: 1) {
+              totalCount
+            }
+            subIssues(first: 1) {
+              totalCount
+            }
+            comments(first: 1) {
+              totalCount
+            }              
             repository {
+              id
               name
               isPrivate
               owner {

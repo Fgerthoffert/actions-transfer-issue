@@ -14,7 +14,9 @@ import {
   createTemporaryRepository,
   makeTemporaryRepositoryPublic,
   deleteTemporaryRepository,
-  sleep
+  sleep,
+  getTransferLabel,
+  addCommentToIssue
 } from './utils'
 
 /**
@@ -26,6 +28,8 @@ export async function run(): Promise<void> {
     const inputGithubToken = core.getInput('token')
     const inputAllowPrivatePublicTransfer =
       core.getInput('allow_private_public_transfer') === 'true'
+    const inputAllowPrivatePublicTransferComment =
+      core.getInput('allow_private_public_transfer_comment') === 'true'
     const inputCreateLabelsIfMissing =
       core.getInput('create_labels_if_missing') === 'true'
 
@@ -48,41 +52,37 @@ export async function run(): Promise<void> {
 
     // Even though we are receiving data from the issue event
     // we're still going to rely on an API call to collect data about the issue.
-    const githubIssue: GitHubIssue = await getIssue({
+    const sourceGithubIssue: GitHubIssue = await getIssue({
       octokit,
       issueId: githubIssueId
     })
 
-    core.debug(`Issue: ${JSON.stringify(githubIssue)}`)
-    if (githubIssue.id === undefined) {
+    core.debug(`Issue: ${JSON.stringify(sourceGithubIssue)}`)
+    if (sourceGithubIssue.id === undefined) {
       core.setFailed(`Unable to find an issue with ID: ${login}`)
-    }
-
-    const inputRouterPrefix: string = core.getInput('router_prefix')
-
-    // In source issue, search for a label matching the router prefix
-    const sourceLabel = githubIssue.labels.nodes.find((label: GitHubLabel) =>
-      label.name.startsWith(inputRouterPrefix)
-    )
-
-    if (sourceLabel === undefined) {
-      core.info(`Could not find a transfer label attached to the issue`)
       return
     }
-    core.info(`Processing transfer label: ${sourceLabel.name}`)
 
+    const sourceLabel = getTransferLabel(sourceGithubIssue)
     // Extract the target repository from the label
     const targetRepositoryName = sourceLabel.name.split(':')[1]
+
+    if (targetRepositoryName === undefined) {
+      core.info(
+        `No transfer label found on issue: ${sourceGithubIssue.title}, exiting`
+      )
+      return
+    }
     core.info(
       `Request to transfer the issue to repository: ${targetRepositoryName}`
     )
 
-    if (targetRepositoryName === githubIssue.repository.name) {
+    if (targetRepositoryName === sourceGithubIssue.repository.name) {
       core.info(`This issue is already in repository: ${targetRepositoryName}`)
       core.info(`Removing transfer label and exiting`)
       await removeLabelFromIssue({
         octokit,
-        issueId: githubIssueId,
+        issueId: sourceGithubIssue.id,
         labelId: sourceLabel.id
       })
       return
@@ -90,7 +90,7 @@ export async function run(): Promise<void> {
 
     const githubTargetRepository: GitHubRepository = await getRepository({
       octokit,
-      ownerLogin: githubIssue.repository.owner.login,
+      ownerLogin: sourceGithubIssue.repository.owner.login,
       repoName: targetRepositoryName
     })
 
@@ -105,7 +105,7 @@ export async function run(): Promise<void> {
     // Special handling to transfer issues from a private repository to a public one
     let transferredIssueId = ''
     if (
-      githubIssue.repository.isPrivate === true &&
+      sourceGithubIssue.repository.isPrivate === true &&
       githubTargetRepository.isPrivate === false
     ) {
       if (inputAllowPrivatePublicTransfer === false) {
@@ -118,24 +118,27 @@ export async function run(): Promise<void> {
         `Request received to transfer the issue out of a private repository and into a public one`
       )
       core.info(`This involves the creation of a temporary private repository`)
+
       const temporaryRepo: GitHubRepository = await createTemporaryRepository({
         octokit,
-        ownerLogin: githubIssue.repository.owner.login
+        ownerLogin: sourceGithubIssue.repository.owner.login
       })
 
       core.info(`Created temporary repository: ${temporaryRepo.name}`)
       const transferredIssueTempRepo = await transferIssueToRepository({
         octokit,
-        issueId: githubIssueId,
+        issueId: sourceGithubIssue.id,
         repositoryId: temporaryRepo.node_id,
-        createLabelsIfMissing: inputCreateLabelsIfMissing
+        createLabelsIfMissing: inputCreateLabelsIfMissing,
+        sourceGithubIssue
       })
+
       core.info(
         `Transferred issue to the temporary repository: ${temporaryRepo.name}, new issue ID is: ${transferredIssueTempRepo.id}`
       )
       const tempRepoStatus = await makeTemporaryRepositoryPublic({
         octokit,
-        ownerLogin: githubIssue.repository.owner.login,
+        ownerLogin: sourceGithubIssue.repository.owner.login,
         repoName: temporaryRepo.name
       })
       core.info(
@@ -146,7 +149,8 @@ export async function run(): Promise<void> {
         octokit,
         issueId: transferredIssueTempRepo.id,
         repositoryId: githubTargetRepository.id,
-        createLabelsIfMissing: inputCreateLabelsIfMissing
+        createLabelsIfMissing: inputCreateLabelsIfMissing,
+        sourceGithubIssue
       })
       transferredIssueId = transferredIssue.id
       core.info(
@@ -155,16 +159,40 @@ export async function run(): Promise<void> {
 
       await deleteTemporaryRepository({
         octokit,
-        ownerLogin: githubIssue.repository.owner.login,
+        ownerLogin: sourceGithubIssue.repository.owner.login,
         repoName: temporaryRepo.name
       })
       core.info(`Temporary repository ${temporaryRepo.name} deleted`)
+
+      if (inputAllowPrivatePublicTransferComment === true) {
+        // Since it might not be desired to expose the name of the private repositories
+        // in a public issue, a flag is available to post or not a comment about the transfer
+        core.info(
+          `Adding comment to issue about the transfer via temporary repository`
+        )
+        await addCommentToIssue({
+          octokit,
+          issueId: transferredIssue.id,
+          comment:
+            'Issue was transferred from a private to a public repository\n\n ' +
+            'Source: `' +
+            `${sourceGithubIssue.repository.owner.login}/${sourceGithubIssue.repository.name}#${sourceGithubIssue.number}` +
+            '`\n' +
+            'Destination: `' +
+            `${sourceGithubIssue.repository.owner.login}/${githubTargetRepository.name}#${transferredIssue.number}` +
+            '`\n' +
+            'Temporary repository: `' +
+            `${sourceGithubIssue.repository.owner.login}/${temporaryRepo.name}#${transferredIssueTempRepo.number}` +
+            ' (deleted)`\n'
+        })
+      }
     } else {
       const transferredIssue = await transferIssueToRepository({
         octokit,
-        issueId: githubIssueId,
+        issueId: sourceGithubIssue.id,
         repositoryId: githubTargetRepository.id,
-        createLabelsIfMissing: inputCreateLabelsIfMissing
+        createLabelsIfMissing: inputCreateLabelsIfMissing,
+        sourceGithubIssue
       })
       transferredIssueId = transferredIssue.id
 
@@ -189,15 +217,7 @@ export async function run(): Promise<void> {
     })
     core.debug(`Issue once moved: ${JSON.stringify(githubIssueMoved)}`)
 
-    const movedLabel = githubIssueMoved.labels.nodes.find(
-      label => label.name === sourceLabel.name
-    )
-    if (movedLabel === undefined) {
-      core.info(
-        `Could not find the transfer label attached to the issue once moved`
-      )
-      return
-    }
+    const movedLabel = getTransferLabel(githubIssueMoved)
     await removeLabelFromIssue({
       octokit,
       issueId: githubIssueMoved.id,
