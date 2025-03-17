@@ -23,7 +23,7 @@
 # About
 
 The goal of this GitHub Action is to facilitate the transfer of issues between
-repositories of the same organization.
+repositories **of the same organization**.
 
 In short, attaching a label `transfer:sandbox` will transfer an issue from its
 current repositories to the sandbox repository.
@@ -48,8 +48,8 @@ that can be entirely automated.
 When `allow_private_public_transfer` is enabled, and if a request is made to
 transfer to an issue from a private repository to a public one, a temporary
 private repository will be automatically created, the issue will be transferred
-to that repository which will then be made public. Finally after the transfer,
-the repository will be deleted.
+to that repository which will then be made public. The issue is then transferred
+to its final destination and the temporary repository is deleted.
 
 This manipulation requires your Personal API Token to have the `delete_repo`
 scope.
@@ -61,12 +61,8 @@ This option is disabled by default.
 
 # Usage
 
-This action is meant at being started manually (i.e. to instantly push a new
-label) and on schedule (i.e. to regularly check that all labels with the same
-name have the same color and description).
-
 ```yaml
-name: Sync Labels
+name: Transfer issue
 
 on:
   issues:
@@ -83,6 +79,7 @@ jobs:
         with:
           token: YOUR_TOKEN
           create_labels_if_missing: true
+          allow_private_public_transfer: true
 ```
 
 # :gear: Configuration
