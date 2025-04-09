@@ -30943,11 +30943,17 @@ const transferIssueToRepository = async ({ octokit, issueId, repositoryId, creat
             // Before transferring back we need to remove the transfer label
             // Otherwise the issue will re-initiate the transfer process
             const movedLabel = (0, _1.getTransferLabel)(checkTransferredIssue);
-            await (0, _1.removeLabelFromIssue)({
-                octokit,
-                issueId: checkTransferredIssue.id,
-                labelId: movedLabel.id
-            });
+            core.info(`The following labels present on the issue: ${JSON.stringify(checkTransferredIssue.labels.nodes.map((label) => label.name))}`);
+            if (movedLabel.id !== '') {
+                await (0, _1.removeLabelFromIssue)({
+                    octokit,
+                    issueId: checkTransferredIssue.id,
+                    labelId: movedLabel.id
+                });
+            }
+            else {
+                core.info(`No transfer label was present on the issue, no label removal needed`);
+            }
             // Transfer the issue back to the source repository
             await (0, exports.transferIssueToRepository)({
                 octokit: octokit,

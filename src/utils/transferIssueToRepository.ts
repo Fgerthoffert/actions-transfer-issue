@@ -139,11 +139,21 @@ export const transferIssueToRepository = async ({
       // Before transferring back we need to remove the transfer label
       // Otherwise the issue will re-initiate the transfer process
       const movedLabel = getTransferLabel(checkTransferredIssue)
-      await removeLabelFromIssue({
-        octokit,
-        issueId: checkTransferredIssue.id,
-        labelId: movedLabel.id
-      })
+      core.info(
+        `The following labels present on the issue: ${JSON.stringify(checkTransferredIssue.labels.nodes.map((label: GitHubLabel) => label.name))}`
+      )
+
+      if (movedLabel.id !== '') {
+        await removeLabelFromIssue({
+          octokit,
+          issueId: checkTransferredIssue.id,
+          labelId: movedLabel.id
+        })
+      } else {
+        core.info(
+          `No transfer label was present on the issue, no label removal needed`
+        )
+      }
 
       // Transfer the issue back to the source repository
       await transferIssueToRepository({
