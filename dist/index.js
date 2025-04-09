@@ -30445,7 +30445,7 @@ const getIssue = async ({ octokit, issueId }) => {
             projectItems {
               totalCount
             }
-            participants(first: 1) {
+            assignees(first: 1) {
               totalCount
             }
             subIssues(first: 1) {
@@ -30867,10 +30867,9 @@ const isTransferComplete = (sourceIssue, transferredIssue) => {
         core.debug(`Source issue has more projectItems than the transferred issue`);
         transferValid = false;
     }
-    else if (sourceIssue.participants === undefined ||
-        sourceIssue.participants.totalCount >
-            transferredIssue.participants.totalCount) {
-        core.debug(`Source issue has more participants than the transferred issue`);
+    else if (sourceIssue.assignees === undefined ||
+        sourceIssue.assignees.totalCount > transferredIssue.assignees.totalCount) {
+        core.debug(`Source issue has more assignees than the transferred issue`);
         transferValid = false;
     }
     else if (sourceIssue.subIssues === undefined ||

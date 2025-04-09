@@ -30,11 +30,10 @@ const isTransferComplete = (
     core.debug(`Source issue has more projectItems than the transferred issue`)
     transferValid = false
   } else if (
-    sourceIssue.participants === undefined ||
-    sourceIssue.participants.totalCount >
-      transferredIssue.participants.totalCount
+    sourceIssue.assignees === undefined ||
+    sourceIssue.assignees.totalCount > transferredIssue.assignees.totalCount
   ) {
-    core.debug(`Source issue has more participants than the transferred issue`)
+    core.debug(`Source issue has more assignees than the transferred issue`)
     transferValid = false
   } else if (
     sourceIssue.subIssues === undefined ||
