@@ -2,6 +2,7 @@
 /* eslint-disable  @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 /* eslint-disable  @typescript-eslint/no-unsafe-call */
+/* eslint-disable  @typescript-eslint/no-unsafe-return */
 
 import * as core from '@actions/core'
 import { sleep, getIssue, getTransferLabel, removeLabelFromIssue } from './'
@@ -138,21 +139,22 @@ export const transferIssueToRepository = async ({
 
       // Before transferring back we need to remove the transfer label
       // Otherwise the issue will re-initiate the transfer process
-      const movedLabel = getTransferLabel(checkTransferredIssue)
-      core.info(
-        `The following labels present on the issue: ${JSON.stringify(checkTransferredIssue.labels.nodes.map((label: GitHubLabel) => label.name))}`
-      )
-
-      if (movedLabel.id !== '') {
-        await removeLabelFromIssue({
-          octokit,
-          issueId: checkTransferredIssue.id,
-          labelId: movedLabel.id
-        })
-      } else {
+      if (checkTransferredIssue.labels && checkTransferredIssue.labels.nodes) {
         core.info(
-          `No transfer label was present on the issue, no label removal needed`
+          `The following labels are present on the issue: ${JSON.stringify(checkTransferredIssue.labels.nodes.map((label: GitHubLabel) => label.name))}`
         )
+        const movedLabel = getTransferLabel(checkTransferredIssue)
+        if (movedLabel.id !== '') {
+          await removeLabelFromIssue({
+            octokit,
+            issueId: checkTransferredIssue.id,
+            labelId: movedLabel.id
+          })
+        } else {
+          core.info(
+            `No transfer label was present on the issue, no label removal needed`
+          )
+        }
       }
 
       // Transfer the issue back to the source repository

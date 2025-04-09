@@ -30814,6 +30814,7 @@ async function sleep(milliseconds) {
 /* eslint-disable  @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 /* eslint-disable  @typescript-eslint/no-unsafe-call */
+/* eslint-disable  @typescript-eslint/no-unsafe-return */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -30942,17 +30943,19 @@ const transferIssueToRepository = async ({ octokit, issueId, repositoryId, creat
             core.info(`The action will now attempt to transfer the issue back to the source repository`);
             // Before transferring back we need to remove the transfer label
             // Otherwise the issue will re-initiate the transfer process
-            const movedLabel = (0, _1.getTransferLabel)(checkTransferredIssue);
-            core.info(`The following labels present on the issue: ${JSON.stringify(checkTransferredIssue.labels.nodes.map((label) => label.name))}`);
-            if (movedLabel.id !== '') {
-                await (0, _1.removeLabelFromIssue)({
-                    octokit,
-                    issueId: checkTransferredIssue.id,
-                    labelId: movedLabel.id
-                });
-            }
-            else {
-                core.info(`No transfer label was present on the issue, no label removal needed`);
+            if (checkTransferredIssue.labels && checkTransferredIssue.labels.nodes) {
+                core.info(`The following labels are present on the issue: ${JSON.stringify(checkTransferredIssue.labels.nodes.map((label) => label.name))}`);
+                const movedLabel = (0, _1.getTransferLabel)(checkTransferredIssue);
+                if (movedLabel.id !== '') {
+                    await (0, _1.removeLabelFromIssue)({
+                        octokit,
+                        issueId: checkTransferredIssue.id,
+                        labelId: movedLabel.id
+                    });
+                }
+                else {
+                    core.info(`No transfer label was present on the issue, no label removal needed`);
+                }
             }
             // Transfer the issue back to the source repository
             await (0, exports.transferIssueToRepository)({
