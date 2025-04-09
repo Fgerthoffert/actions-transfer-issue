@@ -22,7 +22,7 @@ interface GitHubIssue {
   timelineItems: {
     totalCount: number
   }
-  participants: {
+  assignees: {
     totalCount: number
   }
   projectItems: {

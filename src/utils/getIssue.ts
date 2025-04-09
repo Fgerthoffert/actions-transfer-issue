@@ -38,7 +38,7 @@ export const getIssue = async ({
             projectItems {
               totalCount
             }
-            participants(first: 1) {
+            assignees(first: 1) {
               totalCount
             }
             subIssues(first: 1) {
