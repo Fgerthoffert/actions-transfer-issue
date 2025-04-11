@@ -30859,38 +30859,38 @@ const isTransferComplete = (sourceIssue, transferredIssue) => {
     if (sourceIssue.timelineItems === undefined ||
         sourceIssue.timelineItems.totalCount >
             transferredIssue.timelineItems.totalCount) {
-        core.debug(`Source issue has more timeline items than the transferred issue`);
+        core.info(`--- Source issue has more timeline items than the transferred issue ${sourceIssue.timelineItems.totalCount} > ${transferredIssue.timelineItems.totalCount}`);
         transferValid = false;
     }
     else if (sourceIssue.projectItems === undefined ||
         sourceIssue.projectItems.totalCount >
             transferredIssue.projectItems.totalCount) {
-        core.debug(`Source issue has more projectItems than the transferred issue`);
+        core.info(`--- Source issue has more projectItems than the transferred issue ${sourceIssue.projectItems.totalCount} > ${transferredIssue.projectItems.totalCount}`);
         transferValid = false;
     }
     else if (sourceIssue.assignees === undefined ||
         sourceIssue.assignees.totalCount > transferredIssue.assignees.totalCount) {
-        core.debug(`Source issue has more assignees than the transferred issue`);
+        core.info(`--- Source issue has more assignees than the transferred issue ${sourceIssue.assignees.totalCount} > ${transferredIssue.assignees.totalCount}`);
         transferValid = false;
     }
     else if (sourceIssue.subIssues === undefined ||
         sourceIssue.subIssues.totalCount > transferredIssue.subIssues.totalCount) {
-        core.debug(`Source issue has more subIssues than the transferred issue`);
+        core.info(`--- Source issue has more subIssues than the transferred issue ${sourceIssue.subIssues.totalCount} > ${transferredIssue.subIssues.totalCount}`);
         transferValid = false;
     }
     else if (sourceIssue.comments === undefined ||
         sourceIssue.comments.totalCount > transferredIssue.comments.totalCount) {
-        core.debug(`Source issue has more comments than the transferred issue`);
+        core.info(`--- Source issue has more comments than the transferred issue ${sourceIssue.comments.totalCount} > ${transferredIssue.comments.totalCount}`);
         transferValid = false;
     }
     else {
-        core.debug(`All checks successful, issue appears to be fully transferred`);
+        core.info(`--- All checks successful, issue appears to be fully transferred`);
         transferValid = true;
     }
     return transferValid;
 };
 const transferIssueToRepository = async ({ octokit, issueId, repositoryId, createLabelsIfMissing, sourceGithubIssue }) => {
-    core.debug(`Will trigger transfer of issue: ${issueId} to repository: ${repositoryId}`);
+    core.info(`Will trigger transfer of issue: ${issueId} to repository: ${repositoryId}`);
     const graphQLResponse = await octokit
         .graphql(`
       mutation ($repositoryId: ID! $createLabelsIfMissing: Boolean! $issueId: ID!) {
@@ -30916,26 +30916,26 @@ const transferIssueToRepository = async ({ octokit, issueId, repositoryId, creat
     });
     core.debug(`Transfer issue response: ${JSON.stringify(graphQLResponse.transferIssue)}`);
     const transferredIssue = graphQLResponse.transferIssue.issue;
-    core.debug(`Issue transferred, the new issue ID is: ${transferredIssue.id}`);
+    core.info(`Issue transferred, the new issue ID is: ${transferredIssue.id} at url: ${transferredIssue.url}`);
     // Before proceeding, we need to make sure that the issue has been fully transferred
     let issueFound = false;
     let issueTriesCpt = 0;
     const issueMaxTries = 10;
     while (!issueFound) {
-        core.debug(`Querying issue Id ${graphQLResponse.transferIssue.issue.id} to verify cration - try ${issueTriesCpt}/${issueMaxTries}`);
+        core.info(`Querying issue Id ${graphQLResponse.transferIssue.issue.id} to verify transfer complete - try ${issueTriesCpt}/${issueMaxTries}`);
         const checkTransferredIssue = await (0, _1.getIssue)({
             octokit,
             issueId: transferredIssue.id
         });
         if (checkTransferredIssue !== undefined && checkTransferredIssue !== null) {
-            core.debug(`Issue ${transferredIssue.id} was found in the repository`);
+            core.info(`Issue ${transferredIssue.id} was found in the repository`);
             if (isTransferComplete(sourceGithubIssue, checkTransferredIssue)) {
-                core.debug(`Validated that issue ${transferredIssue.id} was fully transferred`);
+                core.info(`Validated that issue ${transferredIssue.id} was fully transferred`);
                 issueFound = true;
                 break;
             }
             else {
-                core.debug(`Issue ${transferredIssue.id} was transferred but is still missing some data`);
+                core.info(`Issue ${transferredIssue.id} was transferred but is still missing some data`);
             }
         }
         if (issueTriesCpt >= issueMaxTries) {
