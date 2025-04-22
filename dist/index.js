@@ -30030,7 +30030,7 @@ async function run() {
                 return;
             }
             core.info(`Request received to transfer the issue out of a private repository and into a public one`);
-            core.info(`This involves the creation of a temporary private repository`);
+            core.info(`This involves the creation of a temporary private repository. This repositoriyy will be deleted once the transfer is complete.`);
             const temporaryRepo = await (0, utils_1.createTemporaryRepository)({
                 octokit,
                 ownerLogin: sourceGithubIssue.repository.owner.login
@@ -30171,7 +30171,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.addCommentToIssue = void 0;
 const core = __importStar(__nccwpck_require__(7484));
 const addCommentToIssue = async ({ octokit, issueId, comment }) => {
-    core.debug(`Adding a comment to issue: ${issueId}`);
+    core.info(`Adding a comment to issue: ${issueId}`);
     const graphQLResponse = await octokit
         .graphql(`
       mutation ($issueId: ID! $body: String!) {
@@ -30263,7 +30263,7 @@ const getRepoName = () => {
 };
 const createTemporaryRepository = async ({ octokit, ownerLogin }) => {
     const repoName = getRepoName();
-    core.debug(`Creating repository ${repoName} in organization ${ownerLogin}`);
+    core.info(`Creating repository ${repoName} in organization ${ownerLogin}`);
     const newRepo = await octokit.request('POST /orgs/{org}/repos', {
         org: ownerLogin,
         name: repoName,
@@ -30280,7 +30280,7 @@ const createTemporaryRepository = async ({ octokit, ownerLogin }) => {
     let repoTriesCpt = 0;
     const repoMaxTries = 10;
     while (!repoFound) {
-        core.debug(`Querying repository ${ownerLogin}/${repoName} to verify cration - try ${repoTriesCpt}/${repoMaxTries}`);
+        core.info(`Querying repository ${ownerLogin}/${repoName} to verify cration - try ${repoTriesCpt}/${repoMaxTries}`);
         const githubTargetRepository = await (0, _1.getRepository)({
             octokit,
             ownerLogin: ownerLogin,
@@ -30289,7 +30289,8 @@ const createTemporaryRepository = async ({ octokit, ownerLogin }) => {
         if (githubTargetRepository !== undefined &&
             githubTargetRepository !== null &&
             githubTargetRepository.issues.totalCount === 0) {
-            core.debug(`Validated repository ${ownerLogin}/${repoName} was indeed created: ${JSON.stringify(githubTargetRepository)}`);
+            core.info(`Validated repository ${ownerLogin}/${repoName} was indeed created`);
+            core.debug(`Repository details: ${JSON.stringify(githubTargetRepository)}`);
             repoFound = true;
             break;
         }
@@ -30356,7 +30357,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.deleteTemporaryRepository = void 0;
 const core = __importStar(__nccwpck_require__(7484));
 const deleteTemporaryRepository = async ({ octokit, ownerLogin, repoName }) => {
-    core.debug(`Deleting temporary repository ${repoName}`);
+    core.info(`Deleting temporary repository ${repoName}`);
     if (!repoName.includes('tmp-')) {
         core.setFailed('Repository name must include "tmp-"');
     }
@@ -30421,7 +30422,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getIssue = void 0;
 const core = __importStar(__nccwpck_require__(7484));
 const getIssue = async ({ octokit, issueId }) => {
-    core.debug(`Fetching details about issue with node_id: ${issueId}`);
+    core.info(`Fetching details about issue with node_id: ${issueId}`);
     const graphQLResponse = await octokit
         .graphql(`
       query issue($issueId: ID!) {
@@ -30524,7 +30525,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getRepository = void 0;
 const core = __importStar(__nccwpck_require__(7484));
 const getRepository = async ({ octokit, ownerLogin, repoName }) => {
-    core.debug(`Fetching details about a repository ${repoName} in organization ${ownerLogin}`);
+    core.info(`Fetching details about a repository ${repoName} in organization ${ownerLogin}`);
     const graphQLResponse = await octokit
         .graphql(`
       query repository($ownerLogin: String!, $repoName: String!) {
@@ -30695,7 +30696,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.makeTemporaryRepositoryPublic = void 0;
 const core = __importStar(__nccwpck_require__(7484));
 const makeTemporaryRepositoryPublic = async ({ octokit, ownerLogin, repoName }) => {
-    core.debug(`Creating repository ${repoName} in organization ${ownerLogin}`);
+    core.info(`Converting repository ${repoName} in organization ${ownerLogin} to public`);
     if (!repoName.includes('tmp-')) {
         core.setFailed('Repository name must include "tmp-"');
     }
@@ -30761,7 +30762,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.removeLabelFromIssue = void 0;
 const core = __importStar(__nccwpck_require__(7484));
 const removeLabelFromIssue = async ({ octokit, issueId, labelId }) => {
-    core.debug(`Removing label ID: ${labelId} from issue ID ${issueId}`);
+    core.info(`Removing label ID: ${labelId} from issue ID ${issueId}`);
     const graphQLResponse = await octokit
         .graphql(`
       mutation ($labelsIds: [ID!]! $labelableId: ID!) {
@@ -30859,38 +30860,38 @@ const isTransferComplete = (sourceIssue, transferredIssue) => {
     if (sourceIssue.timelineItems === undefined ||
         sourceIssue.timelineItems.totalCount >
             transferredIssue.timelineItems.totalCount) {
-        core.debug(`Source issue has more timeline items than the transferred issue`);
+        core.info(`Source issue has more timeline items than the transferred issue`);
         transferValid = false;
     }
     else if (sourceIssue.projectItems === undefined ||
         sourceIssue.projectItems.totalCount >
             transferredIssue.projectItems.totalCount) {
-        core.debug(`Source issue has more projectItems than the transferred issue`);
+        core.info(`Source issue has more projectItems than the transferred issue`);
         transferValid = false;
     }
     else if (sourceIssue.assignees === undefined ||
         sourceIssue.assignees.totalCount > transferredIssue.assignees.totalCount) {
-        core.debug(`Source issue has more assignees than the transferred issue`);
+        core.info(`Source issue has more assignees than the transferred issue`);
         transferValid = false;
     }
     else if (sourceIssue.subIssues === undefined ||
         sourceIssue.subIssues.totalCount > transferredIssue.subIssues.totalCount) {
-        core.debug(`Source issue has more subIssues than the transferred issue`);
+        core.info(`Source issue has more subIssues than the transferred issue`);
         transferValid = false;
     }
     else if (sourceIssue.comments === undefined ||
         sourceIssue.comments.totalCount > transferredIssue.comments.totalCount) {
-        core.debug(`Source issue has more comments than the transferred issue`);
+        core.info(`Source issue has more comments than the transferred issue`);
         transferValid = false;
     }
     else {
-        core.debug(`All checks successful, issue appears to be fully transferred`);
+        core.info(`All checks successful, issue appears to be fully transferred`);
         transferValid = true;
     }
     return transferValid;
 };
 const transferIssueToRepository = async ({ octokit, issueId, repositoryId, createLabelsIfMissing, sourceGithubIssue }) => {
-    core.debug(`Will trigger transfer of issue: ${issueId} to repository: ${repositoryId}`);
+    core.info(`Will trigger transfer of issue: ${issueId} to repository: ${repositoryId}`);
     const graphQLResponse = await octokit
         .graphql(`
       mutation ($repositoryId: ID! $createLabelsIfMissing: Boolean! $issueId: ID!) {
@@ -30916,26 +30917,26 @@ const transferIssueToRepository = async ({ octokit, issueId, repositoryId, creat
     });
     core.debug(`Transfer issue response: ${JSON.stringify(graphQLResponse.transferIssue)}`);
     const transferredIssue = graphQLResponse.transferIssue.issue;
-    core.debug(`Issue transferred, the new issue ID is: ${transferredIssue.id}`);
+    core.info(`Issue transferred, the new issue ID is: ${transferredIssue.id}`);
     // Before proceeding, we need to make sure that the issue has been fully transferred
     let issueFound = false;
     let issueTriesCpt = 0;
     const issueMaxTries = 10;
     while (!issueFound) {
-        core.debug(`Querying issue Id ${graphQLResponse.transferIssue.issue.id} to verify cration - try ${issueTriesCpt}/${issueMaxTries}`);
+        core.info(`Querying issue Id ${graphQLResponse.transferIssue.issue.id} to verify cration - try ${issueTriesCpt}/${issueMaxTries}`);
         const checkTransferredIssue = await (0, _1.getIssue)({
             octokit,
             issueId: transferredIssue.id
         });
         if (checkTransferredIssue !== undefined && checkTransferredIssue !== null) {
-            core.debug(`Issue ${transferredIssue.id} was found in the repository`);
+            core.info(`Issue ${transferredIssue.id} was found in the repository`);
             if (isTransferComplete(sourceGithubIssue, checkTransferredIssue)) {
-                core.debug(`Validated that issue ${transferredIssue.id} was fully transferred`);
+                core.info(`Validated that issue ${transferredIssue.id} was fully transferred`);
                 issueFound = true;
                 break;
             }
             else {
-                core.debug(`Issue ${transferredIssue.id} was transferred but is still missing some data`);
+                core.info(`Issue ${transferredIssue.id} was transferred but is still missing some data`);
             }
         }
         if (issueTriesCpt >= issueMaxTries) {

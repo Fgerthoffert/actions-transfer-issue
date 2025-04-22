@@ -14,7 +14,9 @@ export const makeTemporaryRepositoryPublic = async ({
   ownerLogin: string
   repoName: string
 }): Promise<GitHubRepository> => {
-  core.debug(`Creating repository ${repoName} in organization ${ownerLogin}`)
+  core.info(
+    `Converting repository ${repoName} in organization ${ownerLogin} to public`
+  )
 
   if (!repoName.includes('tmp-')) {
     core.setFailed('Repository name must include "tmp-"')

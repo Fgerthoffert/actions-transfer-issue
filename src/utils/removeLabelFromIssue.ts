@@ -14,7 +14,7 @@ export const removeLabelFromIssue = async ({
   issueId: string
   labelId: string
 }): Promise<GitHubIssue> => {
-  core.debug(`Removing label ID: ${labelId} from issue ID ${issueId}`)
+  core.info(`Removing label ID: ${labelId} from issue ID ${issueId}`)
 
   const graphQLResponse: any = await octokit
     .graphql(

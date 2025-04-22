@@ -14,7 +14,7 @@ export const addCommentToIssue = async ({
   issueId: string
   comment: string
 }): Promise<GitHubIssue> => {
-  core.debug(`Adding a comment to issue: ${issueId}`)
+  core.info(`Adding a comment to issue: ${issueId}`)
 
   const graphQLResponse: any = await octokit
     .graphql(
