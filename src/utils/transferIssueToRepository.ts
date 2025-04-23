@@ -104,7 +104,7 @@ export const transferIssueToRepository = async ({
   // Before proceeding, we need to make sure that the issue has been fully transferred
   let issueFound = false
   let issueTriesCpt = 0
-  const issueMaxTries = 10
+  const issueMaxTries = 20
   while (!issueFound) {
     core.info(
       `Querying issue Id ${graphQLResponse.transferIssue.issue.id} to verify cration - try ${issueTriesCpt}/${issueMaxTries}`

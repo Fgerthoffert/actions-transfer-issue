@@ -52,7 +52,7 @@ export const createTemporaryRepository = async ({
   // and that it has no issues (i.e. no conflict with an existing repo)
   let repoFound = false
   let repoTriesCpt = 0
-  const repoMaxTries = 10
+  const repoMaxTries = 20
   while (!repoFound) {
     core.info(
       `Querying repository ${ownerLogin}/${repoName} to verify cration - try ${repoTriesCpt}/${repoMaxTries}`

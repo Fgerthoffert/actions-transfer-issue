@@ -30278,7 +30278,7 @@ const createTemporaryRepository = async ({ octokit, ownerLogin }) => {
     // and that it has no issues (i.e. no conflict with an existing repo)
     let repoFound = false;
     let repoTriesCpt = 0;
-    const repoMaxTries = 10;
+    const repoMaxTries = 20;
     while (!repoFound) {
         core.info(`Querying repository ${ownerLogin}/${repoName} to verify cration - try ${repoTriesCpt}/${repoMaxTries}`);
         const githubTargetRepository = await (0, _1.getRepository)({
@@ -30921,7 +30921,7 @@ const transferIssueToRepository = async ({ octokit, issueId, repositoryId, creat
     // Before proceeding, we need to make sure that the issue has been fully transferred
     let issueFound = false;
     let issueTriesCpt = 0;
-    const issueMaxTries = 10;
+    const issueMaxTries = 20;
     while (!issueFound) {
         core.info(`Querying issue Id ${graphQLResponse.transferIssue.issue.id} to verify cration - try ${issueTriesCpt}/${issueMaxTries}`);
         const checkTransferredIssue = await (0, _1.getIssue)({
