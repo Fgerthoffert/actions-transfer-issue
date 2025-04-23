@@ -117,7 +117,9 @@ export async function run(): Promise<void> {
       core.info(
         `Request received to transfer the issue out of a private repository and into a public one`
       )
-      core.info(`This involves the creation of a temporary private repository`)
+      core.info(
+        `This involves the creation of a temporary private repository. This repositoriyy will be deleted once the transfer is complete.`
+      )
 
       const temporaryRepo: GitHubRepository = await createTemporaryRepository({
         octokit,

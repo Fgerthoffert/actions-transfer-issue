@@ -14,7 +14,7 @@ export const deleteTemporaryRepository = async ({
   ownerLogin: string
   repoName: string
 }): Promise<GitHubRepository> => {
-  core.debug(`Deleting temporary repository ${repoName}`)
+  core.info(`Deleting temporary repository ${repoName}`)
 
   if (!repoName.includes('tmp-')) {
     core.setFailed('Repository name must include "tmp-"')

@@ -12,7 +12,7 @@ export const getIssue = async ({
   octokit: any
   issueId: string
 }): Promise<GitHubIssue> => {
-  core.debug(`Fetching details about issue with node_id: ${issueId}`)
+  core.info(`Fetching details about issue with node_id: ${issueId}`)
 
   const graphQLResponse: any = await octokit
     .graphql(

@@ -35,7 +35,7 @@ export const createTemporaryRepository = async ({
   ownerLogin: string
 }): Promise<GitHubRepository> => {
   const repoName = getRepoName()
-  core.debug(`Creating repository ${repoName} in organization ${ownerLogin}`)
+  core.info(`Creating repository ${repoName} in organization ${ownerLogin}`)
 
   const newRepo = await octokit.request('POST /orgs/{org}/repos', {
     org: ownerLogin,
@@ -54,7 +54,7 @@ export const createTemporaryRepository = async ({
   let repoTriesCpt = 0
   const repoMaxTries = 10
   while (!repoFound) {
-    core.debug(
+    core.info(
       `Querying repository ${ownerLogin}/${repoName} to verify cration - try ${repoTriesCpt}/${repoMaxTries}`
     )
     const githubTargetRepository: GitHubRepository = await getRepository({
@@ -67,8 +67,11 @@ export const createTemporaryRepository = async ({
       githubTargetRepository !== null &&
       githubTargetRepository.issues.totalCount === 0
     ) {
+      core.info(
+        `Validated repository ${ownerLogin}/${repoName} was indeed created`
+      )
       core.debug(
-        `Validated repository ${ownerLogin}/${repoName} was indeed created: ${JSON.stringify(githubTargetRepository)}`
+        `Repository details: ${JSON.stringify(githubTargetRepository)}`
       )
       repoFound = true
       break

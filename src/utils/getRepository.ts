@@ -14,7 +14,7 @@ export const getRepository = async ({
   ownerLogin: string
   repoName: string
 }): Promise<GitHubRepository> => {
-  core.debug(
+  core.info(
     `Fetching details about a repository ${repoName} in organization ${ownerLogin}`
   )
 
